@@ -1,0 +1,1 @@
+import{n as e,u as t}from"./createLucideIcon-u1b7EiYI.js";var n=t();function r(){return(0,n.jsx)(e.div,{className:`w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full`,animate:{rotate:360},transition:{repeat:1/0,duration:1,ease:`linear`}})}export{r as t};

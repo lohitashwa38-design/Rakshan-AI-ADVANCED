@@ -4,6 +4,7 @@ import { QRCodeCanvas } from "qrcode.react";
 import { signProfile } from "../utils/cryptoId";
 import Spinner from "../components/Spinner";
 import { Zap } from "lucide-react";
+import { QrReader } from "react-qr-reader";
 
 export default function DigitalID() {
   const [form, setForm] = useState({
@@ -16,6 +17,8 @@ export default function DigitalID() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showScanner, setShowScanner] = useState(false);
+  const [scanError, setScanError] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -98,12 +101,43 @@ export default function DigitalID() {
               className="w-full py-5 bg-indigo-600 hover:bg-indigo-500 rounded-2xl font-black text-lg shadow-xl transition-all flex items-center justify-center text-white focus:outline-none focus:ring-4 focus:ring-indigo-500/50"
             >
               {loading ? <Spinner /> : "Generate Secure ID"}
+              <button type="button" onClick={() => setShowScanner(!showScanner)} className="ml-2 px-4 py-2 bg-indigo-500 hover:bg-indigo-400 rounded-md text-sm font-medium text-white">{showScanner ? "Close Scanner" : "Scan QR"}</button>
             </motion.button>
           </div>
 
           <div className="flex flex-col justify-center items-center">
             <div className="w-full h-full min-h-[350px] border-2 border-dashed border-white/10 rounded-[2.5rem] flex flex-col items-center justify-center relative bg-black/20 p-8 shadow-inner">
               <AnimatePresence mode="wait">
+                {showScanner && (
+                  <div className="my-4 w-full max-w-md mx-auto">
+                    <QrReader
+                      constraints={{ facingMode: "environment" }}
+                      onResult={(result, error) => {
+                        if (!!result) {
+                          try {
+                            const data = JSON.parse(result?.text);
+                            // Assume data contains same fields as form
+                            setForm({
+                              name: data.name || "",
+                              passport: data.passport || "",
+                              aadhaar: data.aadhaar || "",
+                              destination: data.destination || "",
+                              emergencyContact: data.emergencyContact || "",
+                            });
+                            setShowScanner(false);
+                            setScanError("");
+                          } catch (e) {
+                            setScanError("Invalid QR data");
+                          }
+                        }
+                        if (error) {
+                          setScanError(error?.message || "Scan error");
+                        }
+                      }}
+                    />
+                    {scanError && <p className="mt-2 text-xs text-red-400">{scanError}</p>}
+                  </div>
+                )}
                 {result ? (
                   <motion.div
                     key="result"
